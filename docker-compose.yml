@@ -25,7 +25,7 @@ services:
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: root
       WORDPRESS_DB_PASSWORD: 1234
-      WORDPRESS_DB_NAME: percona
+      WORDPRESS_DB_NAME: wordpress
       
     ports:
       - 20080:80
