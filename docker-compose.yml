@@ -1,33 +1,51 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  database:
+  # Database
+  db:
     image: percona
     container_name: percona
-    ports:
-        - "13306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: percona
-
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: 1234
+    networks:
+      - wpsite
+  # phpmyadmin
   phpmyadmin:
-    image: phpmyadmin
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin
     container_name: php
+    restart: always
     ports:
-      - 8080:80
-    links:
-      - database:db
-
-  wordpress:
-    image: wordpress
-    container_name: wordpress
+      - '8080:80'
     environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: 1234
-      WORDPRESS_DB_NAME: wordpress
-      
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: 1234
+    networks:
+      - wpsite
+  # Wordpress
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    container_name: wordpress
     ports:
-      - 20080:80
-    links:
-      - database:db
+      - '20080:80'
+    restart: always
+    volumes: ['./:/var/www/html']
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: 1234
+    networks:
+      - wpsite
+networks:
+  wpsite:
+volumes:
+  db_data:
